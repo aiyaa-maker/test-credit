@@ -16,6 +16,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -72,6 +75,10 @@
         }
         .btn-compact:active {
             transform: scale(0.95);
+        }
+        .btn-compact:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .heart-btn {
@@ -136,10 +143,10 @@
             </div>
 
             <h1 id="storeNameDisplay" class="font-display text-lg font-medium text-choco tracking-tight leading-snug">
-                ChocoMint Craft &amp; Studio
+                กำลังโหลดข้อมูลร้าน...
             </h1>
             <p id="storeBioDisplay" class="text-xs text-choco-light/90 mt-1 leading-relaxed max-w-[340px] mx-auto font-light">
-                รับออกแบบกราฟิก ป้ายบัญชี ธีมไลน์ และของตกแต่งน่ารัก งานไว ใส่ใจทุกรายละเอียด ขอบคุณทุกความไว้วางใจค่ะ
+                กำลังโหลด...
             </p>
 
             <!-- Mini Trust Pills -->
@@ -148,7 +155,7 @@
                     <i class="fa-solid fa-shield-heart text-pink-dark text-[9px]"></i> Secure Credit
                 </span>
                 <span id="totalReviewBadge" class="inline-flex items-center gap-1 text-[10px] font-medium bg-choco-soft text-choco px-3 py-1 rounded-full border-2 border-choco-border">
-                    <i class="fa-solid fa-heart text-pink-dark text-[9px]"></i> <span>0 Reviews</span>
+                    <i class="fa-solid fa-heart text-pink-dark text-[9px]"></i> <span id="totalReviewBadgeText">0 Reviews</span>
                 </span>
             </div>
         </div>
@@ -262,7 +269,7 @@
 
                     <!-- Submit Button (Pill) -->
                     <div class="flex justify-end pt-1">
-                        <button type="submit" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-5 py-2.5 rounded-full shadow-xs flex items-center gap-1.5">
+                        <button type="submit" id="submitReviewBtn" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-5 py-2.5 rounded-full shadow-xs flex items-center gap-1.5">
                             <i class="fa-solid fa-paper-plane text-[10px] text-pink"></i>
                             <span>Submit Review</span>
                         </button>
@@ -308,18 +315,18 @@
 
             <!-- Single Unified Payment Container Box -->
             <div class="bg-white border-2 border-choco-border rounded-[28px] p-4 shadow-2xs space-y-4">
-                <!-- Featured QR / Payment Image Container (Dynamically scales to fit image size) -->
+                <!-- Featured QR / Payment Image Container -->
                 <div id="featuredPaymentImageContainer" class="w-full bg-cream rounded-2xl overflow-hidden border-2 border-choco-border/60 flex items-center justify-center p-3">
                     <!-- Populated dynamically -->
                 </div>
 
-                <!-- Unified Account Name (Centered without box) -->
+                <!-- Unified Account Name -->
                 <div class="text-center py-1">
                     <span class="text-[10px] text-choco-light uppercase tracking-wider block mb-0.5">Account Name</span>
-                    <span id="unifiedAccountNameDisplay" class="font-display text-sm font-semibold text-choco">ChocoMint Official</span>
+                    <span id="unifiedAccountNameDisplay" class="font-display text-sm font-semibold text-choco">กำลังโหลด...</span>
                 </div>
 
-                <!-- All 3 Bank Accounts Combined into One Left-Aligned Box -->
+                <!-- Bank Accounts Combined -->
                 <div id="paymentAccountsInfoList" class="space-y-2.5 pt-1">
                     <!-- Populated dynamically -->
                 </div>
@@ -364,36 +371,42 @@
                 </button>
             </div>
 
-            <!-- Login View -->
+            <!-- Login View (Supabase Auth) -->
             <div id="adminLoginView" class="p-6 text-center">
                 <div class="w-12 h-12 rounded-full bg-choco-soft text-choco flex items-center justify-center mx-auto mb-3 text-lg border-2 border-choco-border">
                     <i class="fa-solid fa-key"></i>
                 </div>
                 <h3 class="font-display text-sm font-medium text-choco">Owner Authentication</h3>
-                <p class="text-[11px] text-choco-muted mt-0.5 mb-4">Enter password to manage store & payment accounts</p>
+                <p class="text-[11px] text-choco-muted mt-0.5 mb-4">เข้าสู่ระบบด้วยบัญชีแอดมิน Supabase</p>
                 
                 <form onsubmit="handleAdminLogin(event)" class="space-y-3 max-w-[260px] mx-auto">
-                    <input type="password" id="adminPasswordInput" placeholder="Password (Default: 1234)" required
+                    <input type="email" id="adminEmailInput" placeholder="Admin Email" required
+                        class="w-full text-center bg-cream text-xs text-choco px-4 py-2.5 rounded-full border-2 border-choco-border focus:outline-none focus:border-pink-dark">
+                    <input type="password" id="adminPasswordInput" placeholder="Password" required
                         class="w-full text-center tracking-widest bg-cream text-xs text-choco px-4 py-2.5 rounded-full border-2 border-choco-border focus:outline-none focus:border-pink-dark">
-                    <p id="loginErrorMsg" class="text-[10px] text-red-500 hidden">Incorrect password, please try again</p>
-                    <button type="submit" class="btn-compact w-full bg-choco hover:bg-choco-light text-white text-xs font-medium py-2.5 rounded-full shadow-xs">
+                    <p id="loginErrorMsg" class="text-[10px] text-red-500 hidden">เข้าสู่ระบบไม่สำเร็จ หรือไม่มีสิทธิ์แอดมิน</p>
+                    <button type="submit" id="adminLoginBtn" class="btn-compact w-full bg-choco hover:bg-choco-light text-white text-xs font-medium py-2.5 rounded-full shadow-xs">
                         Login
                     </button>
                 </form>
-                <p class="text-[10px] text-choco-muted/80 mt-3">Hint: 1234</p>
             </div>
 
             <!-- Dashboard View -->
             <div id="adminDashboardView" class="hidden">
-                <div class="flex border-b-2 border-choco-border/60 px-3 pt-2.5 gap-1 bg-cream/80 overflow-x-auto">
-                    <button onclick="switchAdminTab('settings')" id="tabSettingsBtn" class="text-[11px] font-medium pb-2 px-2.5 border-b-2 border-choco text-choco flex items-center gap-1 shrink-0">
-                        <i class="fa-solid fa-store text-[10px]"></i> Store Info
-                    </button>
-                    <button onclick="switchAdminTab('payment')" id="tabPaymentAdminBtn" class="text-[11px] font-medium pb-2 px-2.5 border-b-2 border-transparent text-choco-muted hover:text-choco flex items-center gap-1 shrink-0">
-                        <i class="fa-solid fa-wallet text-[10px]"></i> Accounts
-                    </button>
-                    <button onclick="switchAdminTab('reviews')" id="tabReviewsBtn" class="text-[11px] font-medium pb-2 px-2.5 border-b-2 border-transparent text-choco-muted hover:text-choco flex items-center gap-1 shrink-0">
-                        <i class="fa-solid fa-comments text-[10px]"></i> Reviews
+                <div class="flex items-center justify-between border-b-2 border-choco-border/60 px-3 pt-2.5 bg-cream/80">
+                    <div class="flex gap-1 overflow-x-auto">
+                        <button onclick="switchAdminTab('settings')" id="tabSettingsBtn" class="text-[11px] font-medium pb-2 px-2.5 border-b-2 border-choco text-choco flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-store text-[10px]"></i> Store Info
+                        </button>
+                        <button onclick="switchAdminTab('payment')" id="tabPaymentAdminBtn" class="text-[11px] font-medium pb-2 px-2.5 border-b-2 border-transparent text-choco-muted hover:text-choco flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-wallet text-[10px]"></i> Accounts
+                        </button>
+                        <button onclick="switchAdminTab('reviews')" id="tabReviewsBtn" class="text-[11px] font-medium pb-2 px-2.5 border-b-2 border-transparent text-choco-muted hover:text-choco flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-comments text-[10px]"></i> Reviews
+                        </button>
+                    </div>
+                    <button type="button" onclick="handleAdminLogout()" class="text-[10px] text-red-500 hover:underline pb-2 px-2 shrink-0">
+                        Logout
                     </button>
                 </div>
 
@@ -433,16 +446,8 @@
                         </div>
                     </div>
 
-                    <div class="pt-1 border-t-2 border-dashed border-choco-border">
-                        <label class="block text-[10px] font-medium text-choco mb-0.5">Change Admin Password</label>
-                        <input type="text" id="editAdminPass" class="w-full bg-cream text-xs text-choco px-4 py-2 rounded-full border-2 border-choco-border focus:outline-none focus:border-pink-dark">
-                    </div>
-
-                    <div class="flex items-center justify-between pt-2">
-                        <button type="button" onclick="resetToDefaults()" class="btn-compact text-[10px] text-choco-muted hover:text-choco underline">
-                            Reset Defaults
-                        </button>
-                        <button type="submit" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-5 py-2 rounded-full shadow-xs flex items-center gap-1.5">
+                    <div class="flex items-center justify-end pt-2">
+                        <button type="submit" id="saveSettingsBtn" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-5 py-2 rounded-full shadow-xs flex items-center gap-1.5">
                             <i class="fa-solid fa-floppy-disk text-[10px] text-pink"></i>
                             <span>Save Settings</span>
                         </button>
@@ -469,7 +474,7 @@
                     </div>
 
                     <div class="flex justify-end pt-2">
-                        <button type="submit" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-5 py-2 rounded-full shadow-xs flex items-center gap-1.5">
+                        <button type="submit" id="saveAccountsBtn" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-5 py-2 rounded-full shadow-xs flex items-center gap-1.5">
                             <i class="fa-solid fa-floppy-disk text-[10px] text-pink"></i>
                             <span>Save Accounts</span>
                         </button>
@@ -494,108 +499,160 @@
     </div>
 
     <script>
-        const STORAGE_KEYS = {
-            SETTINGS: 'chocomint_store_settings_v11',
-            REVIEWS: 'chocomint_store_reviews_v11',
-            PAYMENT: 'chocomint_store_payment_v11'
+        // ==========================================
+        // 1. SUPABASE CONFIGURATION
+        // ==========================================
+        const SUPABASE_URL = 'https://vhewazpuazhynztzlhnk.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_mUuY65cdaEyThPFZr71fLg_En8T7qiM';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ==========================================
+        // 2. APPLICATION STATE
+        // ==========================================
+        let storeSettings = {
+            id: null,
+            store_name: 'ChocoMint Craft & Studio',
+            store_bio: '',
+            avatar_url: '',
+            banner_url: '',
+            facebook_url: 'https://facebook.com',
+            line_url: 'https://line.me',
+            song_title: '',
+            song_url: '',
+            unified_account_name: 'ChocoMint Official',
+            featured_payment_image: ''
         };
 
-        const DEFAULT_SETTINGS = {
-            storeName: 'ChocoMint Craft & Studio',
-            storeBio: 'รับออกแบบกราฟิก ป้ายบัญชี ธีมไลน์ และของตกแต่งน่ารัก งานไว ใส่ใจทุกรายละเอียด ขอบคุณทุกความไว้วางใจค่ะ',
-            avatarUrl: '',
-            bannerUrl: '',
-            facebookUrl: 'https://facebook.com',
-            lineUrl: 'https://line.me',
-            songTitle: 'Mint Chocolate Lo-fi Box',
-            songUrl: '',
-            adminPassword: '1234'
-        };
-
-        const DEFAULT_PAYMENT_DATA = {
-            unifiedAccountName: 'ChocoMint Official',
-            featuredImage: '',
-            accounts: [
-                { title: 'TrueMoney Wallet', accountNumber: '081-234-5678' },
-                { title: 'PromptPay', accountNumber: '081-234-5678' },
-                { title: 'Government Savings Bank (GSB)', accountNumber: '123-4-56789-0' }
-            ]
-        };
-
-        const DEFAULT_REVIEWS = [
-            {
-                id: 'rev-101',
-                name: 'Mintra',
-                rating: 5,
-                comment: 'งานน่ารักมากกก ตรงปกสุดๆ แม่ค้าใจดีและตอบแชทไวมากค่ะ ไว้มาอุดหนุนอีกแน่นอน',
-                date: '12 Nov 2026',
-                pinned: true,
-                likedBySeller: true,
-                imageUrl: ''
-            }
-        ];
-
-        let storeSettings = { ...DEFAULT_SETTINGS };
-        let paymentData = { ...DEFAULT_PAYMENT_DATA };
+        let paymentAccounts = [];
         let reviews = [];
         let selectedRating = 5;
         let currentFilter = 'all';
         let currentActiveTab = 'reviews';
         let isAdminAuthenticated = false;
         let tempReviewImageBase64 = '';
+        let isSubmitting = false;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDataFromStorage();
-            renderStoreProfile();
-            renderReviews();
-            renderPaymentAccounts();
+        // ==========================================
+        // 3. INITIALIZATION & DATA FETCHING
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
             setRating(5);
+            await checkAdminSession();
+            await Promise.all([
+                fetchStoreSettings(),
+                fetchPaymentAccounts(),
+                fetchReviews()
+            ]);
         });
 
-        function loadDataFromStorage() {
+        async function checkAdminSession() {
             try {
-                const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-                if (savedSettings) {
-                    storeSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (session) {
+                    const { data: isAdmin, error } = await supabaseClient.rpc('is_admin');
+                    if (!error && isAdmin === true) {
+                        isAdminAuthenticated = true;
+                        return true;
+                    }
                 }
-                const savedPayment = localStorage.getItem(STORAGE_KEYS.PAYMENT);
-                if (savedPayment) {
-                    paymentData = JSON.parse(savedPayment);
-                }
-                const savedReviews = localStorage.getItem(STORAGE_KEYS.REVIEWS);
-                if (savedReviews) {
-                    reviews = JSON.parse(savedReviews);
+            } catch (err) {
+                console.error('Session check error:', err);
+            }
+            isAdminAuthenticated = false;
+            return false;
+        }
+
+        async function fetchStoreSettings() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('store_settings')
+                    .select('*')
+                    .order('id', { ascending: true })
+                    .limit(1);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    storeSettings = { ...storeSettings, ...data[0] };
                 } else {
-                    reviews = [...DEFAULT_REVIEWS];
-                    saveReviewsToStorage();
+                    storeSettings.store_name = 'ChocoMint Craft & Studio';
+                    storeSettings.store_bio = 'ยังไม่มีข้อมูลคำอธิบายร้าน';
                 }
-            } catch (e) {
-                reviews = [...DEFAULT_REVIEWS];
+                renderStoreProfile();
+            } catch (err) {
+                console.error('Fetch store_settings error:', err);
+                document.getElementById('storeNameDisplay').textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูลร้าน';
+                document.getElementById('storeBioDisplay').textContent = 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาลองใหม่อีกครั้ง';
             }
         }
 
-        function saveSettingsToStorage() {
-            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(storeSettings));
+        async function fetchPaymentAccounts() {
+            const listContainer = document.getElementById('paymentAccountsInfoList');
+            const imgContainer = document.getElementById('featuredPaymentImageContainer');
+            listContainer.replaceChildren(createStatusMessage('กำลังโหลดข้อมูลบัญชีชำระเงิน...'));
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('payment_accounts')
+                    .select('*')
+                    .order('display_order', { ascending: true })
+                    .order('id', { ascending: true });
+
+                if (error) throw error;
+
+                paymentAccounts = data || [];
+                renderPaymentAccounts();
+            } catch (err) {
+                console.error('Fetch payment_accounts error:', err);
+                listContainer.replaceChildren(createStatusMessage('เกิดข้อผิดพลาดในการโหลดบัญชีชำระเงิน', true));
+                imgContainer.replaceChildren(createStatusMessage('ไม่สามารถโหลดรูปภาพ QR Code ได้', true));
+            }
         }
 
-        function savePaymentToStorage() {
-            localStorage.setItem(STORAGE_KEYS.PAYMENT, JSON.stringify(paymentData));
+        async function fetchReviews() {
+            const listEl = document.getElementById('reviewsList');
+            listEl.replaceChildren(createStatusMessage('กำลังโหลดรีวิว...'));
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('reviews')
+                    .select('*')
+                    .order('pinned', { ascending: false })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                reviews = data || [];
+                renderReviews();
+            } catch (err) {
+                console.error('Fetch reviews error:', err);
+                listEl.replaceChildren(createStatusMessage('เกิดข้อผิดพลาดในการโหลดรีวิว กรุณารีเฟรชหน้าเว็บ', true));
+            }
         }
 
-        function saveReviewsToStorage() {
-            localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
+        function createStatusMessage(text, isError = false) {
+            const div = document.createElement('div');
+            div.className = `text-center py-6 bg-cream/60 rounded-2xl border-2 border-dashed ${isError ? 'border-red-300 text-red-500' : 'border-choco-border text-choco-muted'}`;
+            const p = document.createElement('p');
+            p.className = 'text-xs';
+            p.textContent = text;
+            div.appendChild(p);
+            return div;
         }
 
+        // ==========================================
+        // 4. RENDERING FUNCTIONS (Safe DOM API)
+        // ==========================================
         function renderStoreProfile() {
-            document.getElementById('storeNameDisplay').textContent = storeSettings.storeName;
-            document.getElementById('storeBioDisplay').textContent = storeSettings.storeBio;
+            document.getElementById('storeNameDisplay').textContent = storeSettings.store_name || 'ไม่มีข้อมูลชื่อร้าน';
+            document.getElementById('storeBioDisplay').textContent = storeSettings.store_bio || '';
 
-            document.getElementById('contactFacebookLink').href = storeSettings.facebookUrl || 'https://facebook.com';
-            document.getElementById('contactLineLink').href = storeSettings.lineUrl || 'https://line.me';
+            document.getElementById('contactFacebookLink').href = storeSettings.facebook_url || 'https://facebook.com';
+            document.getElementById('contactLineLink').href = storeSettings.line_url || 'https://line.me';
 
             const bannerImg = document.getElementById('bannerImage');
-            if (storeSettings.bannerUrl && storeSettings.bannerUrl.trim() !== '') {
-                bannerImg.src = storeSettings.bannerUrl.trim();
+            if (storeSettings.banner_url && storeSettings.banner_url.trim() !== '') {
+                bannerImg.src = storeSettings.banner_url.trim();
                 bannerImg.classList.remove('hidden');
             } else {
                 bannerImg.classList.add('hidden');
@@ -603,8 +660,8 @@
 
             const profileImg = document.getElementById('profileImage');
             const avatarFallback = document.getElementById('avatarFallback');
-            if (storeSettings.avatarUrl && storeSettings.avatarUrl.trim() !== '') {
-                profileImg.src = storeSettings.avatarUrl.trim();
+            if (storeSettings.avatar_url && storeSettings.avatar_url.trim() !== '') {
+                profileImg.src = storeSettings.avatar_url.trim();
                 profileImg.classList.remove('hidden');
                 avatarFallback.classList.add('hidden');
             } else {
@@ -612,10 +669,10 @@
             }
 
             const audioEl = document.getElementById('customAudioPlayer');
-            if (storeSettings.songUrl && storeSettings.songUrl.trim() !== '') {
-                if (audioEl.src !== storeSettings.songUrl.trim()) {
+            if (storeSettings.song_url && storeSettings.song_url.trim() !== '') {
+                if (audioEl.src !== storeSettings.song_url.trim()) {
                     stopMusic();
-                    audioEl.src = storeSettings.songUrl.trim();
+                    audioEl.src = storeSettings.song_url.trim();
                 }
             } else {
                 audioEl.removeAttribute('src');
@@ -649,37 +706,226 @@
         }
 
         function renderPaymentAccounts() {
-            document.getElementById('unifiedAccountNameDisplay').textContent = paymentData.unifiedAccountName || 'ChocoMint Official';
+            document.getElementById('unifiedAccountNameDisplay').textContent = storeSettings.unified_account_name || 'ไม่มีข้อมูลชื่อบัญชี';
 
-            // Featured Image Container dynamically sizes to fit the uploaded image
             const imgContainer = document.getElementById('featuredPaymentImageContainer');
-            if (paymentData.featuredImage && paymentData.featuredImage.trim() !== '') {
-                imgContainer.innerHTML = `<img src="${paymentData.featuredImage}" alt="Featured Payment QR" class="w-full h-auto max-h-[360px] object-contain rounded-xl">`;
+            imgContainer.replaceChildren();
+
+            if (storeSettings.featured_payment_image && storeSettings.featured_payment_image.trim() !== '') {
+                const img = document.createElement('img');
+                img.src = storeSettings.featured_payment_image.trim();
+                img.alt = 'Featured Payment QR';
+                img.className = 'w-full h-auto max-h-[360px] object-contain rounded-xl';
+                imgContainer.appendChild(img);
             } else {
-                imgContainer.innerHTML = `
-                    <div class="flex flex-col items-center justify-center text-choco-muted text-[11px] py-10">
-                        <i class="fa-regular fa-image text-2xl mb-1.5 text-pink-dark"></i>
-                        <span>No featured payment QR image attached yet</span>
-                    </div>
-                `;
+                const placeholder = document.createElement('div');
+                placeholder.className = 'flex flex-col items-center justify-center text-choco-muted text-[11px] py-10';
+                const icon = document.createElement('i');
+                icon.className = 'fa-regular fa-image text-2xl mb-1.5 text-pink-dark';
+                const span = document.createElement('span');
+                span.textContent = 'ไม่มีข้อมูลรูปภาพ QR Code';
+                placeholder.append(icon, span);
+                imgContainer.appendChild(placeholder);
             }
 
-            // Combine all 3 accounts into one single box, left-aligned
             const listContainer = document.getElementById('paymentAccountsInfoList');
-            let accountsHtml = paymentData.accounts.map((acc, idx) => `
-                <div class="${idx > 0 ? 'pt-2.5 mt-2.5 border-t border-choco-border/30' : ''}">
-                    <span class="text-choco font-display font-semibold text-sm block">${escapeHtml(acc.title)}</span>
-                    <span class="font-bold text-choco-dark font-mono text-sm tracking-wide block mt-0.5">${escapeHtml(acc.accountNumber || '-')}</span>
-                </div>
-            `).join('');
+            listContainer.replaceChildren();
 
-            listContainer.innerHTML = `
-                <div class="bg-cream px-5 py-4 rounded-[28px] border-2 border-choco-border/50 text-left space-y-1">
-                    ${accountsHtml}
-                </div>
-            `;
+            if (paymentAccounts.length === 0) {
+                listContainer.appendChild(createStatusMessage('ไม่มีข้อมูลบัญชีชำระเงิน'));
+                return;
+            }
+
+            const box = document.createElement('div');
+            box.className = 'bg-cream px-5 py-4 rounded-[28px] border-2 border-choco-border/50 text-left space-y-1';
+
+            paymentAccounts.forEach((acc, idx) => {
+                const row = document.createElement('div');
+                if (idx > 0) {
+                    row.className = 'pt-2.5 mt-2.5 border-t border-choco-border/30';
+                }
+
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'text-choco font-display font-semibold text-sm block';
+                titleSpan.textContent = acc.title;
+
+                const numberSpan = document.createElement('span');
+                numberSpan.className = 'font-bold text-choco-dark font-mono text-sm tracking-wide block mt-0.5';
+                numberSpan.textContent = acc.account_number || '-';
+
+                row.append(titleSpan, numberSpan);
+                box.appendChild(row);
+            });
+
+            listContainer.appendChild(box);
         }
 
+        function formatThaiDate(isoString) {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            if (isNaN(d.getTime())) return '';
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function renderReviews() {
+            const listEl = document.getElementById('reviewsList');
+            const totalCount = reviews.length;
+            const avgScore = totalCount > 0 
+                ? (reviews.reduce((sum, r) => sum + (Number(r.rating) || 5), 0) / totalCount).toFixed(1)
+                : '5.0';
+
+            document.getElementById('avgScoreDisplay').textContent = avgScore;
+            document.getElementById('reviewCountText').textContent = `Based on ${totalCount} reviews`;
+            document.getElementById('totalReviewBadgeText').textContent = `${totalCount} Reviews`;
+
+            const sortedReviews = [...reviews].sort((a, b) => {
+                if (Boolean(b.pinned) !== Boolean(a.pinned)) {
+                    return Boolean(b.pinned) ? 1 : -1;
+                }
+                return new Date(b.created_at) - new Date(a.created_at);
+            });
+
+            const filteredReviews = currentFilter === '5' 
+                ? sortedReviews.filter(r => Number(r.rating) === 5) 
+                : sortedReviews;
+
+            listEl.replaceChildren();
+
+            if (filteredReviews.length === 0) {
+                const emptyBox = document.createElement('div');
+                emptyBox.className = 'text-center py-8 bg-cream/60 rounded-full border-2 border-dashed border-choco-border';
+                const icon = document.createElement('i');
+                icon.className = 'fa-regular fa-heart text-xl text-choco-muted mb-1.5';
+                const p = document.createElement('p');
+                p.className = 'text-xs text-choco-muted';
+                p.textContent = 'ไม่มีข้อมูลรีวิวในหมวดหมู่นี้';
+                emptyBox.append(icon, p);
+                listEl.appendChild(emptyBox);
+                return;
+            }
+
+            filteredReviews.forEach(rev => {
+                const article = document.createElement('article');
+                article.className = `bg-cream/90 hover:bg-white transition-colors border-2 ${rev.pinned ? 'border-pink-dark/60' : 'border-choco-border/70'} rounded-3xl p-4 shadow-2xs`;
+
+                // Top Header Row
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'flex items-start justify-between gap-2 mb-1.5';
+
+                const leftInfo = document.createElement('div');
+                leftInfo.className = 'flex items-center gap-2.5 min-w-0';
+
+                const avatarIconBox = document.createElement('div');
+                avatarIconBox.className = 'w-7 h-7 rounded-full bg-pink-soft text-choco flex items-center justify-center text-[11px] font-medium shrink-0 border-2 border-pink/60';
+                const userIcon = document.createElement('i');
+                userIcon.className = 'fa-solid fa-user text-[10px] text-choco-light';
+                avatarIconBox.appendChild(userIcon);
+
+                const nameDateBox = document.createElement('div');
+                nameDateBox.className = 'min-w-0';
+
+                const nameRow = document.createElement('div');
+                nameRow.className = 'flex items-center gap-1.5';
+
+                const h4 = document.createElement('h4');
+                h4.className = 'text-xs font-medium text-choco truncate';
+                h4.textContent = rev.name || 'Anonymous Customer';
+                nameRow.appendChild(h4);
+
+                if (rev.pinned) {
+                    const pinBadge = document.createElement('span');
+                    pinBadge.className = 'inline-flex items-center gap-1 text-[9px] font-medium bg-pink-soft text-choco px-2.5 py-0.5 rounded-full border border-pink';
+                    const pinIcon = document.createElement('i');
+                    pinIcon.className = 'fa-solid fa-thumbtack text-[8px] text-pink-dark';
+                    const pinText = document.createElement('span');
+                    pinText.textContent = 'Featured';
+                    pinBadge.append(pinIcon, pinText);
+                    nameRow.appendChild(pinBadge);
+                }
+
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'text-[10px] text-choco-muted block';
+                dateSpan.textContent = formatThaiDate(rev.created_at);
+
+                nameDateBox.append(nameRow, dateSpan);
+                leftInfo.append(avatarIconBox, nameDateBox);
+
+                // Rating Hearts Pill
+                const heartsBox = document.createElement('div');
+                heartsBox.className = 'flex items-center gap-0.5 shrink-0 bg-white px-2.5 py-1 rounded-full border-2 border-choco-border/50';
+                for (let i = 1; i <= 5; i++) {
+                    const hIcon = document.createElement('i');
+                    hIcon.className = i <= Number(rev.rating)
+                        ? 'fa-solid fa-heart text-pink-dark text-[10px]'
+                        : 'fa-solid fa-heart text-choco-border text-[10px]';
+                    heartsBox.appendChild(hIcon);
+                }
+
+                headerDiv.append(leftInfo, heartsBox);
+                article.appendChild(headerDiv);
+
+                // Comment Paragraph
+                const commentP = document.createElement('p');
+                commentP.className = 'text-xs text-choco-light leading-relaxed pl-9 break-words';
+                commentP.textContent = rev.comment;
+                article.appendChild(commentP);
+
+                // Image Attachment
+                if (rev.image_url && rev.image_url.trim() !== '') {
+                    const imgWrap = document.createElement('div');
+                    imgWrap.className = 'mt-2.5 pl-9';
+                    const link = document.createElement('a');
+                    link.href = rev.image_url;
+                    link.target = '_blank';
+                    const img = document.createElement('img');
+                    img.src = rev.image_url;
+                    img.alt = 'Review Photo';
+                    img.className = 'w-20 h-20 object-cover rounded-2xl border-2 border-choco-border/60 hover:opacity-95 transition-opacity';
+                    link.appendChild(img);
+                    imgWrap.appendChild(link);
+                    article.appendChild(imgWrap);
+                }
+
+                // Seller Like Badge / Admin Action
+                if (rev.liked_by_seller || isAdminAuthenticated) {
+                    const actionRow = document.createElement('div');
+                    actionRow.className = 'flex items-center gap-1.5 mt-2.5 pl-9';
+
+                    if (rev.liked_by_seller) {
+                        const badge = document.createElement('div');
+                        badge.className = 'inline-flex items-center gap-1 text-[10px] text-pink-dark font-medium bg-pink-soft/80 px-3 py-1 rounded-full border-2 border-pink/50 shadow-2xs';
+                        const h = document.createElement('i');
+                        h.className = 'fa-solid fa-heart';
+                        const s = document.createElement('span');
+                        s.textContent = 'Love by owner';
+                        badge.append(h, s);
+                        actionRow.appendChild(badge);
+                    }
+
+                    if (isAdminAuthenticated) {
+                        const toggleBtn = document.createElement('button');
+                        toggleBtn.type = 'button';
+                        toggleBtn.className = 'btn-compact text-[10px] text-choco-light hover:text-pink-dark bg-white px-3 py-1 rounded-full border-2 border-choco-border/70 shadow-2xs flex items-center gap-1 font-medium';
+                        toggleBtn.onclick = () => toggleSellerLike(rev.id, !rev.liked_by_seller, toggleBtn);
+                        const h = document.createElement('i');
+                        h.className = `fa-solid fa-heart${rev.liked_by_seller ? '' : '-slash'} text-pink-dark`;
+                        const s = document.createElement('span');
+                        s.textContent = rev.liked_by_seller ? 'Remove Love by owner' : 'Love by owner';
+                        toggleBtn.append(h, s);
+                        actionRow.appendChild(toggleBtn);
+                    }
+
+                    article.appendChild(actionRow);
+                }
+
+                listEl.appendChild(article);
+            });
+        }
+
+        // ==========================================
+        // 5. CUSTOMER REVIEW INTERACTIONS
+        // ==========================================
         function setRating(val) {
             selectedRating = val;
             document.getElementById('ratingLabel').textContent = `${val}/5`;
@@ -727,83 +973,49 @@
             document.getElementById('imagePreviewWrapper').classList.remove('flex');
         }
 
-        function handleAdminAvatarUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('editAvatarUrl').value = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function handleAdminBannerUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('editBannerUrl').value = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function handleFeaturedPaymentUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('editFeaturedPaymentImg').value = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function submitReview(event) {
+        async function submitReview(event) {
             event.preventDefault();
+            if (isSubmitting) return;
+
             const nameInput = document.getElementById('customerNameInput');
             const textInput = document.getElementById('reviewTextInput');
+            const submitBtn = document.getElementById('submitReviewBtn');
 
             const comment = textInput.value.trim();
             if (!comment) return;
 
             const customerName = nameInput.value.trim() || 'Anonymous Customer';
-            const now = new Date();
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const formattedDate = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
-            const newReview = {
-                id: 'rev-' + Date.now(),
-                name: customerName,
-                rating: selectedRating,
-                comment: comment,
-                date: formattedDate,
-                pinned: false,
-                likedBySeller: false,
-                imageUrl: tempReviewImageBase64 || ''
-            };
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            const originalBtnText = submitBtn.querySelector('span').textContent;
+            submitBtn.querySelector('span').textContent = 'กำลังส่ง...';
 
-            reviews.unshift(newReview);
-            saveReviewsToStorage();
-            renderReviews();
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .insert([{
+                        name: customerName,
+                        rating: selectedRating,
+                        comment: comment,
+                        image_url: tempReviewImageBase64 || null
+                    }]);
 
-            nameInput.value = '';
-            textInput.value = '';
-            clearSelectedImage();
-            setRating(5);
-            showToast('Review submitted successfully');
-        }
+                if (error) throw error;
 
-        function toggleSellerLike(id) {
-            if (!isAdminAuthenticated) return;
-            const target = reviews.find(r => r.id === id);
-            if (target) {
-                target.likedBySeller = !target.likedBySeller;
-                saveReviewsToStorage();
-                renderReviews();
-                renderAdminReviewsList();
-                showToast(target.likedBySeller ? 'Love by owner applied' : 'Love by owner removed');
+                nameInput.value = '';
+                textInput.value = '';
+                clearSelectedImage();
+                setRating(5);
+                showToast('ส่งรีวิวเรียบร้อยแล้ว');
+                await fetchReviews();
+            } catch (err) {
+                console.error('Submit review error:', err);
+                showToast('เกิดข้อผิดพลาดในการส่งรีวิว');
+            } finally {
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.querySelector('span').textContent = originalBtnText;
             }
         }
 
@@ -822,99 +1034,9 @@
             renderReviews();
         }
 
-        function renderReviews() {
-            const listEl = document.getElementById('reviewsList');
-            const totalCount = reviews.length;
-            const avgScore = totalCount > 0 
-                ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalCount).toFixed(1)
-                : '5.0';
-
-            document.getElementById('avgScoreDisplay').textContent = avgScore;
-            document.getElementById('reviewCountText').textContent = `Based on ${totalCount} reviews`;
-            document.getElementById('totalReviewBadge').innerHTML = `<i class="fa-solid fa-heart text-pink-dark text-[9px]"></i> <span>${totalCount} Reviews</span>`;
-
-            const sortedReviews = [...reviews].sort((a, b) => (b.pinned === true) - (a.pinned === true));
-            const filteredReviews = currentFilter === '5' 
-                ? sortedReviews.filter(r => r.rating === 5) 
-                : sortedReviews;
-
-            if (filteredReviews.length === 0) {
-                listEl.innerHTML = `
-                    <div class="text-center py-8 bg-cream/60 rounded-full border-2 border-dashed border-choco-border">
-                        <i class="fa-regular fa-heart text-xl text-choco-muted mb-1.5"></i>
-                        <p class="text-xs text-choco-muted">No reviews found in this filter</p>
-                    </div>
-                `;
-                return;
-            }
-
-            listEl.innerHTML = filteredReviews.map(rev => {
-                let heartsHtml = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= rev.rating) {
-                        heartsHtml += `<i class="fa-solid fa-heart text-pink-dark text-[10px]"></i>`;
-                    } else {
-                        heartsHtml += `<i class="fa-solid fa-heart text-choco-border text-[10px]"></i>`;
-                    }
-                }
-
-                const pinBadge = rev.pinned 
-                    ? `<span class="inline-flex items-center gap-1 text-[9px] font-medium bg-pink-soft text-choco px-2.5 py-0.5 rounded-full border border-pink"><i class="fa-solid fa-thumbtack text-[8px] text-pink-dark"></i> Featured</span>` 
-                    : '';
-
-                const imageHtml = rev.imageUrl 
-                    ? `<div class="mt-2.5 pl-9"><a href="${rev.imageUrl}" target="_blank"><img src="${rev.imageUrl}" alt="Review Photo" class="w-20 h-20 object-cover rounded-2xl border-2 border-choco-border/60 hover:opacity-95 transition-opacity"></a></div>` 
-                    : '';
-
-                let sellerLikeHtml = '';
-                if (rev.likedBySeller) {
-                    sellerLikeHtml = `
-                        <div class="inline-flex items-center gap-1 text-[10px] text-pink-dark font-medium bg-pink-soft/80 px-3 py-1 rounded-full border-2 border-pink/50 shadow-2xs">
-                            <i class="fa-solid fa-heart"></i>
-                            <span>Love by owner</span>
-                        </div>
-                    `;
-                }
-
-                if (isAdminAuthenticated) {
-                    sellerLikeHtml += `
-                        <button onclick="toggleSellerLike('${rev.id}')" class="btn-compact text-[10px] text-choco-light hover:text-pink-dark bg-white px-3 py-1 rounded-full border-2 border-choco-border/70 shadow-2xs flex items-center gap-1 font-medium">
-                            <i class="fa-solid fa-heart${rev.likedBySeller ? '' : '-slash'} text-pink-dark"></i>
-                            <span>${rev.likedBySeller ? 'Remove Love by owner' : 'Love by owner'}</span>
-                        </button>
-                    `;
-                }
-
-                return `
-                    <article class="bg-cream/90 hover:bg-white transition-colors border-2 ${rev.pinned ? 'border-pink-dark/60' : 'border-choco-border/70'} rounded-3xl p-4 shadow-2xs">
-                        <div class="flex items-start justify-between gap-2 mb-1.5">
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <div class="w-7 h-7 rounded-full bg-pink-soft text-choco flex items-center justify-center text-[11px] font-medium shrink-0 border-2 border-pink/60">
-                                    <i class="fa-solid fa-user text-[10px] text-choco-light"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-1.5">
-                                        <h4 class="text-xs font-medium text-choco truncate">${escapeHtml(rev.name)}</h4>
-                                        ${pinBadge}
-                                    </div>
-                                    <span class="text-[10px] text-choco-muted block">${escapeHtml(rev.date)}</span>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-0.5 shrink-0 bg-white px-2.5 py-1 rounded-full border-2 border-choco-border/50">
-                                ${heartsHtml}
-                            </div>
-                        </div>
-                        <p class="text-xs text-choco-light leading-relaxed pl-9 break-words">
-                            ${escapeHtml(rev.comment)}
-                        </p>
-                        ${imageHtml}
-                        ${sellerLikeHtml ? `<div class="flex items-center gap-1.5 mt-2.5 pl-9">${sellerLikeHtml}</div>` : ''}
-                    </article>
-                `;
-            }).join('');
-        }
-
-        /* Music Player Logic */
+        // ==========================================
+        // 6. MUSIC PLAYER LOGIC
+        // ==========================================
         let isPlaying = false;
         let audioCtx = null;
         let synthInterval = null;
@@ -936,7 +1058,7 @@
         }
 
         function startMusic() {
-            const customUrl = storeSettings.songUrl && storeSettings.songUrl.trim();
+            const customUrl = storeSettings.song_url && storeSettings.song_url.trim();
             const audioEl = document.getElementById('customAudioPlayer');
 
             if (customUrl) {
@@ -1015,13 +1137,16 @@
             }
         }
 
-        /* Admin Panel Logic */
-        function openAdminModal() {
+        // ==========================================
+        // 7. ADMIN PANEL & SUPABASE AUTH
+        // ==========================================
+        async function openAdminModal() {
             const modal = document.getElementById('adminModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
-            if (isAdminAuthenticated) {
+            const validAdmin = await checkAdminSession();
+            if (validAdmin) {
                 showAdminDashboard();
             } else {
                 document.getElementById('adminLoginView').classList.remove('hidden');
@@ -1039,32 +1164,72 @@
             renderPaymentAccounts();
         }
 
-        function handleAdminLogin(e) {
+        async function handleAdminLogin(e) {
             e.preventDefault();
-            const inputPass = document.getElementById('adminPasswordInput').value;
-            if (inputPass === storeSettings.adminPassword) {
+            if (isSubmitting) return;
+
+            const email = document.getElementById('adminEmailInput').value.trim();
+            const password = document.getElementById('adminPasswordInput').value;
+            const loginBtn = document.getElementById('adminLoginBtn');
+            const errorMsg = document.getElementById('loginErrorMsg');
+
+            isSubmitting = true;
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'กำลังตรวจสอบ...';
+            errorMsg.classList.add('hidden');
+
+            try {
+                const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (signInError) throw signInError;
+
+                const { data: isAdmin, error: rpcError } = await supabaseClient.rpc('is_admin');
+                if (rpcError || isAdmin !== true) {
+                    await supabaseClient.auth.signOut();
+                    isAdminAuthenticated = false;
+                    errorMsg.textContent = 'บัญชีนี้ไม่มีสิทธิ์แอดมิน';
+                    errorMsg.classList.remove('hidden');
+                    return;
+                }
+
                 isAdminAuthenticated = true;
                 showAdminDashboard();
                 renderReviews();
-            } else {
-                document.getElementById('loginErrorMsg').classList.remove('hidden');
+                showToast('เข้าสู่ระบบแอดมินสำเร็จ');
+            } catch (err) {
+                console.error('Admin login error:', err);
+                errorMsg.textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                errorMsg.classList.remove('hidden');
+            } finally {
+                isSubmitting = false;
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
             }
+        }
+
+        async function handleAdminLogout() {
+            await supabaseClient.auth.signOut();
+            isAdminAuthenticated = false;
+            closeAdminModal();
+            showToast('ออกจากระบบแล้ว');
         }
 
         function showAdminDashboard() {
             document.getElementById('adminLoginView').classList.add('hidden');
             document.getElementById('adminDashboardView').classList.remove('hidden');
 
-            document.getElementById('editStoreName').value = storeSettings.storeName;
-            document.getElementById('editStoreBio').value = storeSettings.storeBio;
-            document.getElementById('editAvatarUrl').value = storeSettings.avatarUrl;
-            document.getElementById('editBannerUrl').value = storeSettings.bannerUrl;
-            document.getElementById('editFacebookUrl').value = storeSettings.facebookUrl || '';
-            document.getElementById('editLineUrl').value = storeSettings.lineUrl || '';
-            document.getElementById('editAdminPass').value = storeSettings.adminPassword;
+            document.getElementById('editStoreName').value = storeSettings.store_name || '';
+            document.getElementById('editStoreBio').value = storeSettings.store_bio || '';
+            document.getElementById('editAvatarUrl').value = storeSettings.avatar_url || '';
+            document.getElementById('editBannerUrl').value = storeSettings.banner_url || '';
+            document.getElementById('editFacebookUrl').value = storeSettings.facebook_url || '';
+            document.getElementById('editLineUrl').value = storeSettings.line_url || '';
 
-            document.getElementById('editUnifiedAccountName').value = paymentData.unifiedAccountName || 'ChocoMint Official';
-            document.getElementById('editFeaturedPaymentImg').value = paymentData.featuredImage || '';
+            document.getElementById('editUnifiedAccountName').value = storeSettings.unified_account_name || '';
+            document.getElementById('editFeaturedPaymentImg').value = storeSettings.featured_payment_image || '';
 
             renderAdminPaymentFields();
             renderAdminReviewsList();
@@ -1100,129 +1265,360 @@
             }
         }
 
+        function handleAdminAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('editAvatarUrl').value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleAdminBannerUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('editBannerUrl').value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleFeaturedPaymentUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('editFeaturedPaymentImg').value = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveAdminSettings(e) {
+            e.preventDefault();
+            if (isSubmitting || !isAdminAuthenticated) return;
+
+            const saveBtn = document.getElementById('saveSettingsBtn');
+            isSubmitting = true;
+            saveBtn.disabled = true;
+            saveBtn.querySelector('span').textContent = 'กำลังบันทึก...';
+
+            const payload = {
+                store_name: document.getElementById('editStoreName').value.trim(),
+                store_bio: document.getElementById('editStoreBio').value.trim(),
+                avatar_url: document.getElementById('editAvatarUrl').value.trim(),
+                banner_url: document.getElementById('editBannerUrl').value.trim(),
+                facebook_url: document.getElementById('editFacebookUrl').value.trim(),
+                line_url: document.getElementById('editLineUrl').value.trim()
+            };
+
+            try {
+                if (storeSettings.id) {
+                    const { error } = await supabaseClient
+                        .from('store_settings')
+                        .update(payload)
+                        .eq('id', storeSettings.id);
+                    if (error) throw error;
+                } else {
+                    const { error } = await supabaseClient
+                        .from('store_settings')
+                        .insert([payload]);
+                    if (error) throw error;
+                }
+
+                await fetchStoreSettings();
+                closeAdminModal();
+                showToast('บันทึกข้อมูลร้านค้าเรียบร้อยแล้ว');
+            } catch (err) {
+                console.error('Save store settings error:', err);
+                showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูลร้านค้า');
+            } finally {
+                isSubmitting = false;
+                saveBtn.disabled = false;
+                saveBtn.querySelector('span').textContent = 'Save Settings';
+            }
+        }
+
         function renderAdminPaymentFields() {
             const container = document.getElementById('adminPaymentFieldsContainer');
-            container.innerHTML = paymentData.accounts.map((acc, index) => `
-                <div class="bg-cream p-3.5 rounded-2xl border-2 border-choco-border/70 space-y-2">
-                    <h5 class="text-xs font-medium text-choco">${escapeHtml(acc.title)}</h5>
-                    <div>
-                        <label class="block text-[10px] text-choco-light mb-0.5">Account Title</label>
-                        <input type="text" id="editPayTitle_${index}" value="${escapeHtml(acc.title)}" class="w-full bg-white text-xs text-choco px-3 py-1.5 rounded-full border border-choco-border">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] text-choco-light mb-0.5">Account Number / ID</label>
-                        <input type="text" id="editPayNo_${index}" value="${escapeHtml(acc.accountNumber)}" class="w-full bg-white text-xs text-choco px-3 py-1.5 rounded-full border border-choco-border">
-                    </div>
-                </div>
-            `).join('');
-        }
+            container.replaceChildren();
 
-        function savePaymentAccounts(e) {
-            e.preventDefault();
-            const unifiedAccountName = document.getElementById('editUnifiedAccountName').value.trim() || 'ChocoMint Official';
-            const featuredImage = document.getElementById('editFeaturedPaymentImg').value.trim();
-            
-            const updatedAccounts = paymentData.accounts.map((acc, index) => {
-                const title = document.getElementById(`editPayTitle_${index}`).value.trim();
-                const accountNumber = document.getElementById(`editPayNo_${index}`).value.trim();
-                return { ...acc, title, accountNumber };
+            const listToRender = paymentAccounts.length > 0 ? paymentAccounts : [
+                { id: null, title: 'TrueMoney Wallet', account_number: '', display_order: 1 },
+                { id: null, title: 'PromptPay', account_number: '', display_order: 2 },
+                { id: null, title: 'Government Savings Bank (GSB)', account_number: '', display_order: 3 }
+            ];
+
+            listToRender.forEach((acc, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-cream p-3.5 rounded-2xl border-2 border-choco-border/70 space-y-2';
+
+                const h5 = document.createElement('h5');
+                h5.className = 'text-xs font-medium text-choco';
+                h5.textContent = acc.title || `Account #${index + 1}`;
+
+                const titleDiv = document.createElement('div');
+                const titleLabel = document.createElement('label');
+                titleLabel.className = 'block text-[10px] text-choco-light mb-0.5';
+                titleLabel.textContent = 'Account Title';
+                const titleInput = document.createElement('input');
+                titleInput.type = 'text';
+                titleInput.id = `editPayTitle_${index}`;
+                titleInput.value = acc.title || '';
+                titleInput.className = 'w-full bg-white text-xs text-choco px-3 py-1.5 rounded-full border border-choco-border';
+                titleInput.dataset.accId = acc.id || '';
+                titleDiv.append(titleLabel, titleInput);
+
+                const numDiv = document.createElement('div');
+                const numLabel = document.createElement('label');
+                numLabel.className = 'block text-[10px] text-choco-light mb-0.5';
+                numLabel.textContent = 'Account Number / ID';
+                const numInput = document.createElement('input');
+                numInput.type = 'text';
+                numInput.id = `editPayNo_${index}`;
+                numInput.value = acc.account_number || '';
+                numInput.className = 'w-full bg-white text-xs text-choco px-3 py-1.5 rounded-full border border-choco-border';
+                numDiv.append(numLabel, numInput);
+
+                card.append(h5, titleDiv, numDiv);
+                container.appendChild(card);
             });
-
-            paymentData = { unifiedAccountName, featuredImage, accounts: updatedAccounts };
-            savePaymentToStorage();
-            renderPaymentAccounts();
-            closeAdminModal();
-            showToast('Payment accounts updated successfully');
         }
 
-        function saveAdminSettings(e) {
+        async function savePaymentAccounts(e) {
             e.preventDefault();
-            storeSettings.storeName = document.getElementById('editStoreName').value.trim() || DEFAULT_SETTINGS.storeName;
-            storeSettings.storeBio = document.getElementById('editStoreBio').value.trim();
-            
-            const avUrl = document.getElementById('editAvatarUrl').value.trim();
-            if (avUrl) storeSettings.avatarUrl = avUrl;
+            if (isSubmitting || !isAdminAuthenticated) return;
 
-            const banUrl = document.getElementById('editBannerUrl').value.trim();
-            if (banUrl) storeSettings.bannerUrl = banUrl;
+            const saveBtn = document.getElementById('saveAccountsBtn');
+            isSubmitting = true;
+            saveBtn.disabled = true;
+            saveBtn.querySelector('span').textContent = 'กำลังบันทึก...';
 
-            storeSettings.facebookUrl = document.getElementById('editFacebookUrl').value.trim();
-            storeSettings.lineUrl = document.getElementById('editLineUrl').value.trim();
-            
-            const newPass = document.getElementById('editAdminPass').value.trim();
-            if (newPass) storeSettings.adminPassword = newPass;
+            const unifiedAccountName = document.getElementById('editUnifiedAccountName').value.trim();
+            const featuredImage = document.getElementById('editFeaturedPaymentImg').value.trim();
 
-            saveSettingsToStorage();
-            renderStoreProfile();
-            closeAdminModal();
-            showToast('Store settings updated successfully');
-        }
+            try {
+                // 1. Update store_settings unified payment fields
+                const settingsPayload = {
+                    unified_account_name: unifiedAccountName,
+                    featured_payment_image: featuredImage
+                };
 
-        function resetToDefaults() {
-            storeSettings = { ...DEFAULT_SETTINGS };
-            paymentData = { ...DEFAULT_PAYMENT_DATA };
-            saveSettingsToStorage();
-            savePaymentToStorage();
-            renderStoreProfile();
-            renderPaymentAccounts();
-            showAdminDashboard();
-            showToast('Reset to defaults successfully');
+                if (storeSettings.id) {
+                    const { error } = await supabaseClient
+                        .from('store_settings')
+                        .update(settingsPayload)
+                        .eq('id', storeSettings.id);
+                    if (error) throw error;
+                } else {
+                    const { error } = await supabaseClient
+                        .from('store_settings')
+                        .insert([settingsPayload]);
+                    if (error) throw error;
+                }
+
+                // 2. Update or Insert payment_accounts rows
+                const fieldCount = document.getElementById('adminPaymentFieldsContainer').children.length;
+                for (let i = 0; i < fieldCount; i++) {
+                    const titleEl = document.getElementById(`editPayTitle_${i}`);
+                    const numEl = document.getElementById(`editPayNo_${i}`);
+                    const accId = titleEl.dataset.accId;
+                    const titleVal = titleEl.value.trim();
+                    const numVal = numEl.value.trim();
+
+                    if (!titleVal) continue;
+
+                    if (accId) {
+                        const { error } = await supabaseClient
+                            .from('payment_accounts')
+                            .update({ title: titleVal, account_number: numVal, display_order: i + 1 })
+                            .eq('id', accId);
+                        if (error) throw error;
+                    } else {
+                        const { error } = await supabaseClient
+                            .from('payment_accounts')
+                            .insert([{ title: titleVal, account_number: numVal, display_order: i + 1 }]);
+                        if (error) throw error;
+                    }
+                }
+
+                await Promise.all([fetchStoreSettings(), fetchPaymentAccounts()]);
+                closeAdminModal();
+                showToast('บันทึกบัญชีชำระเงินเรียบร้อยแล้ว');
+            } catch (err) {
+                console.error('Save payment accounts error:', err);
+                showToast('เกิดข้อผิดพลาดในการบันทึกบัญชี');
+            } finally {
+                isSubmitting = false;
+                saveBtn.disabled = false;
+                saveBtn.querySelector('span').textContent = 'Save Accounts';
+            }
         }
 
         function renderAdminReviewsList() {
             const container = document.getElementById('adminReviewsList');
+            container.replaceChildren();
+
             if (reviews.length === 0) {
-                container.innerHTML = `<p class="text-xs text-choco-muted text-center py-4">No reviews yet</p>`;
+                const p = document.createElement('p');
+                p.className = 'text-xs text-choco-muted text-center py-4';
+                p.textContent = 'ไม่มีข้อมูลรีวิว';
+                container.appendChild(p);
                 return;
             }
 
-            container.innerHTML = reviews.map(rev => `
-                <div class="bg-cream border-2 border-choco-border/80 rounded-2xl p-3 flex items-start justify-between gap-2">
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-medium text-choco truncate">${escapeHtml(rev.name)}</span>
-                            <span class="text-[10px] text-pink-dark font-medium">(${rev.rating}/5)</span>
-                            ${rev.likedBySeller ? '<span class="text-[9px] bg-pink-soft text-pink-dark px-2 rounded-full">Love by owner</span>' : ''}
-                        </div>
-                        <p class="text-[11px] text-choco-light line-clamp-2 mt-0.5">${escapeHtml(rev.comment)}</p>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="toggleSellerLike('${rev.id}')" title="Love by owner"
-                            class="btn-compact w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] ${rev.likedBySeller ? 'bg-pink text-choco border-pink-dark' : 'bg-white text-choco-muted border-choco-border'}">
-                            <i class="fa-solid fa-heart"></i>
-                        </button>
-                        <button type="button" onclick="togglePinReview('${rev.id}')" title="${rev.pinned ? 'Unpin' : 'Pin'}"
-                            class="btn-compact w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] ${rev.pinned ? 'bg-pink text-choco border-pink-dark' : 'bg-white text-choco-muted border-choco-border'}">
-                            <i class="fa-solid fa-thumbtack"></i>
-                        </button>
-                        <button type="button" onclick="deleteReview('${rev.id}')" title="Delete"
-                            class="btn-compact w-6 h-6 rounded-full bg-white hover:bg-red-50 text-red-500 border-2 border-choco-border flex items-center justify-center text-[10px]">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+            reviews.forEach(rev => {
+                const card = document.createElement('div');
+                card.className = 'bg-cream border-2 border-choco-border/80 rounded-2xl p-3 flex items-start justify-between gap-2';
+
+                const infoCol = document.createElement('div');
+                infoCol.className = 'min-w-0 flex-1';
+
+                const topRow = document.createElement('div');
+                topRow.className = 'flex items-center gap-1.5';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'text-xs font-medium text-choco truncate';
+                nameSpan.textContent = rev.name || 'Anonymous';
+
+                const rateSpan = document.createElement('span');
+                rateSpan.className = 'text-[10px] text-pink-dark font-medium';
+                rateSpan.textContent = `(${rev.rating}/5)`;
+
+                topRow.append(nameSpan, rateSpan);
+
+                if (rev.liked_by_seller) {
+                    const loveBadge = document.createElement('span');
+                    loveBadge.className = 'text-[9px] bg-pink-soft text-pink-dark px-2 rounded-full';
+                    loveBadge.textContent = 'Love by owner';
+                    topRow.appendChild(loveBadge);
+                }
+
+                const commentP = document.createElement('p');
+                commentP.className = 'text-[11px] text-choco-light line-clamp-2 mt-0.5';
+                commentP.textContent = rev.comment;
+
+                infoCol.append(topRow, commentP);
+
+                // Action Buttons
+                const btnGroup = document.createElement('div');
+                btnGroup.className = 'flex items-center gap-1 shrink-0';
+
+                const likeBtn = document.createElement('button');
+                likeBtn.type = 'button';
+                likeBtn.title = 'Love by owner';
+                likeBtn.className = `btn-compact w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] ${rev.liked_by_seller ? 'bg-pink text-choco border-pink-dark' : 'bg-white text-choco-muted border-choco-border'}`;
+                likeBtn.onclick = () => toggleSellerLike(rev.id, !rev.liked_by_seller, likeBtn);
+                const heartIcon = document.createElement('i');
+                heartIcon.className = 'fa-solid fa-heart';
+                likeBtn.appendChild(heartIcon);
+
+                const pinBtn = document.createElement('button');
+                pinBtn.type = 'button';
+                pinBtn.title = rev.pinned ? 'Unpin' : 'Pin';
+                pinBtn.className = `btn-compact w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] ${rev.pinned ? 'bg-pink text-choco border-pink-dark' : 'bg-white text-choco-muted border-choco-border'}`;
+                pinBtn.onclick = () => togglePinReview(rev.id, !rev.pinned, pinBtn);
+                const pinIcon = document.createElement('i');
+                pinIcon.className = 'fa-solid fa-thumbtack';
+                pinBtn.appendChild(pinIcon);
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.title = 'Delete';
+                delBtn.className = 'btn-compact w-6 h-6 rounded-full bg-white hover:bg-red-50 text-red-500 border-2 border-choco-border flex items-center justify-center text-[10px]';
+                delBtn.onclick = () => deleteReview(rev.id, delBtn);
+                const trashIcon = document.createElement('i');
+                trashIcon.className = 'fa-solid fa-trash-can';
+                delBtn.appendChild(trashIcon);
+
+                btnGroup.append(likeBtn, pinBtn, delBtn);
+                card.append(infoCol, btnGroup);
+                container.appendChild(card);
+            });
         }
 
-        function togglePinReview(id) {
-            const target = reviews.find(r => r.id === id);
-            if (target) {
-                target.pinned = !target.pinned;
-                saveReviewsToStorage();
-                renderReviews();
+        async function toggleSellerLike(id, newStatus, btnEl) {
+            if (!isAdminAuthenticated || isSubmitting) return;
+            isSubmitting = true;
+            if (btnEl) btnEl.disabled = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .update({ liked_by_seller: newStatus })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await fetchReviews();
                 renderAdminReviewsList();
-                showToast(target.pinned ? 'Review pinned' : 'Review unpinned');
+                showToast(newStatus ? 'เพิ่มสถานะ Love by owner แล้ว' : 'นำสถานะ Love by owner ออกแล้ว');
+            } catch (err) {
+                console.error('Toggle seller like error:', err);
+                showToast('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+            } finally {
+                isSubmitting = false;
+                if (btnEl) btnEl.disabled = false;
             }
         }
 
-        function deleteReview(id) {
-            reviews = reviews.filter(r => r.id !== id);
-            saveReviewsToStorage();
-            renderReviews();
-            renderAdminReviewsList();
-            showToast('Review deleted');
+        async function togglePinReview(id, newStatus, btnEl) {
+            if (!isAdminAuthenticated || isSubmitting) return;
+            isSubmitting = true;
+            if (btnEl) btnEl.disabled = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .update({ pinned: newStatus })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await fetchReviews();
+                renderAdminReviewsList();
+                showToast(newStatus ? 'ปักหมุดรีวิวแล้ว' : 'ยกเลิกปักหมุดรีวิวแล้ว');
+            } catch (err) {
+                console.error('Toggle pin error:', err);
+                showToast('เกิดข้อผิดพลาดในการปักหมุด');
+            } finally {
+                isSubmitting = false;
+                if (btnEl) btnEl.disabled = false;
+            }
         }
 
+        async function deleteReview(id, btnEl) {
+            if (!isAdminAuthenticated || isSubmitting) return;
+            isSubmitting = true;
+            if (btnEl) btnEl.disabled = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('reviews')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await fetchReviews();
+                renderAdminReviewsList();
+                showToast('ลบรีวิวเรียบร้อยแล้ว');
+            } catch (err) {
+                console.error('Delete review error:', err);
+                showToast('เกิดข้อผิดพลาดในการลบรีวิว');
+            } finally {
+                isSubmitting = false;
+                if (btnEl) btnEl.disabled = false;
+            }
+        }
+
+        // ==========================================
+        // 8. TOAST NOTIFICATION
+        // ==========================================
         let toastTimer = null;
         function showToast(msg) {
             const toast = document.getElementById('toastNotification');
@@ -1235,16 +1631,6 @@
                 toast.classList.add('opacity-0', 'translate-y-2');
                 toast.classList.remove('opacity-100', 'translate-y-0');
             }, 2500);
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
         }
     </script>
 </body>
