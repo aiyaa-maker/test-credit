@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChocoMint Studio — Credit & Customer Reviews</title>
+    
+    <!-- Google Fonts: Prompt & Mitr -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome 6 (Thin/Solid/Regular Icons - Zero Emojis) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        choco: {
+                            DEFAULT: '#5C4033',
+                            light: '#7B5843',
+                            muted: '#9C7E6C',
+                            soft: '#EFE8E3',
+                            border: '#E5DBD3'
+                        },
+                        mint: {
+                            DEFAULT: '#A8E6CF',
+                            soft: '#E4F7F0',
+                            mid: '#88D4B8',
+                            dark: '#57A98B'
+                        },
+                        cream: {
+                            DEFAULT: '#F9FBF9',
+                            pure: '#FFFFFF'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                        display: ['Mitr', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Base Styling & Minimal Scrollbar */
+        body {
+            background-color: #F4F8F6;
+            background-image: radial-gradient(#BCEAD5 0.75px, transparent 0.75px), radial-gradient(#E5DBD3 0.75px, #F4F8F6 0.75px);
+            background-size: 28px 28px;
+            background-position: 0 0, 14px 14px;
+            color: #5C4033;
+            font-family: 'Prompt', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Default Choco-Mint Gingham/Grid Pattern for Banner when no image URL is set */
+        .banner-pattern {
+            background-color: #BCEAD5;
+            background-image: 
+                linear-gradient(90deg, rgba(255, 255, 255, 0.45) 50%, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.45) 50%, transparent 50%);
+            background-size: 24px 24px;
+        }
+
+        /* Smooth Transitions */
+        .btn-compact {
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .btn-compact:active {
+            transform: scale(0.95);
+        }
+
+        /* Equalizer Animation for Music Player */
+        @keyframes eqBar {
+            0%, 100% { height: 4px; }
+            50% { height: 12px; }
+        }
+        .eq-playing span:nth-child(1) { animation: eqBar 0.7s ease-in-out infinite; }
+        .eq-playing span:nth-child(2) { animation: eqBar 0.5s ease-in-out infinite 0.15s; }
+        .eq-playing span:nth-child(3) { animation: eqBar 0.8s ease-in-out infinite 0.3s; }
+
+        /* Heart Rating Hover & Active Scale */
+        .heart-btn {
+            transition: transform 0.18s ease, color 0.18s ease;
+        }
+        .heart-btn:hover {
+            transform: scale(1.18);
+        }
+
+        /* Custom subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F9FBF9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #BCEAD5;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-4 px-3 sm:py-8 sm:px-4 flex flex-col items-center">
+
+    <!-- Main Mobile-First Container -->
+    <main class="w-full max-w-[440px] bg-white rounded-3xl shadow-[0_10px_35px_-10px_rgba(92,64,51,0.12)] border border-choco-border/60 overflow-hidden relative">
+        
+        <!-- Top Floating Action Bar (Copy Link & Admin Lock) -->
+        <div class="absolute top-3 right-3 z-20 flex items-center gap-1.5">
+            <button onclick="copyStoreLink()" title="คัดลอกลิงก์หน้าร้าน" class="btn-compact bg-white/90 backdrop-blur-sm hover:bg-white text-choco text-[11px] font-medium px-2.5 py-1.5 rounded-full shadow-sm border border-choco-border/70 flex items-center gap-1.5">
+                <i class="fa-solid fa-link text-[10px] text-mint-dark"></i>
+                <span>แชร์ลิงก์</span>
+            </button>
+            <button onclick="openAdminModal()" title="ระบบหลังบ้านเจ้าของร้าน" class="btn-compact bg-white/90 backdrop-blur-sm hover:bg-choco hover:text-white text-choco w-7 h-7 rounded-full shadow-sm border border-choco-border/70 flex items-center justify-center text-[11px]">
+                <i class="fa-solid fa-lock"></i>
+            </button>
+        </div>
+
+        <!-- 1. Banner Section -->
+        <div id="bannerContainer" class="w-full h-36 sm:h-40 banner-pattern relative overflow-hidden">
+            <img id="bannerImage" src="" alt="Store Banner" class="w-full h-full object-cover hidden" onerror="this.classList.add('hidden')">
+            <!-- Subtle decorative gradient overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent pointer-events-none"></div>
+        </div>
+
+        <!-- 2. Profile Picture & 3. Store Info -->
+        <div class="px-5 pb-5 relative text-center">
+            <!-- Profile Avatar overlapping Banner -->
+            <div class="relative -mt-12 mb-2.5 inline-block">
+                <div class="w-24 h-24 rounded-full bg-white p-1.5 shadow-md mx-auto border border-mint-soft">
+                    <div id="avatarWrapper" class="w-full h-full rounded-full bg-mint-soft flex items-center justify-center overflow-hidden relative">
+                        <img id="profileImage" src="" alt="Profile" class="w-full h-full object-cover hidden" onerror="handleAvatarError()">
+                        <!-- Clean CSS/Icon Fallback Avatar -->
+                        <div id="avatarFallback" class="w-full h-full bg-gradient-to-br from-mint-soft to-mint flex flex-col items-center justify-center text-choco">
+                            <i class="fa-solid fa-store text-2xl text-choco/80"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Verified Mini Badge -->
+                <span title="ร้านค้ายืนยันตัวตนแล้ว" class="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-choco text-mint text-[9px] flex items-center justify-center border-2 border-white shadow-xs">
+                    <i class="fa-solid fa-check"></i>
+                </span>
+            </div>
+
+            <!-- Store Name & Bio -->
+            <h1 id="storeNameDisplay" class="font-display text-lg font-medium text-choco tracking-tight leading-snug">
+                ChocoMint Craft &amp; Studio
+            </h1>
+            <p id="storeBioDisplay" class="text-xs text-choco-light/90 mt-1 leading-relaxed max-w-[340px] mx-auto font-light">
+                รับออกแบบกราฟิก ป้ายบัญชี ธีมไลน์ และของตกแต่งน่ารัก งานไว ใส่ใจทุกรายละเอียด ขอบคุณทุกความไว้วางใจค่ะ
+            </p>
+
+            <!-- Mini Trust Pills -->
+            <div class="flex items-center justify-center gap-2 mt-3">
+                <span class="inline-flex items-center gap-1 text-[10px] font-medium bg-mint-soft text-choco px-2.5 py-0.5 rounded-full border border-mint/50">
+                    <i class="fa-solid fa-shield-heart text-mint-dark text-[9px]"></i> เครดิตปลอดภัย 100%
+                </span>
+                <span id="totalReviewBadge" class="inline-flex items-center gap-1 text-[10px] font-medium bg-choco-soft text-choco px-2.5 py-0.5 rounded-full border border-choco-border">
+                    <i class="fa-solid fa-heart text-choco text-[9px]"></i> <span>0 รีวิว</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- 4. Minimal Background Music Player -->
+        <div class="px-5 mb-5">
+            <div class="bg-cream border border-mint/60 rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-3 shadow-2xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <!-- Compact Play/Pause Button -->
+                    <button id="musicToggleBtn" onclick="toggleMusic()" class="btn-compact w-8 h-8 rounded-full bg-choco hover:bg-choco-light text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
+                        <i id="musicPlayIcon" class="fa-solid fa-play ml-0.5"></i>
+                    </button>
+                    
+                    <!-- Song Info & Progress -->
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] uppercase tracking-wider font-semibold text-mint-dark bg-mint-soft px-1.5 py-0.2 rounded">BGM</span>
+                            <p id="songTitleDisplay" class="text-xs font-medium text-choco truncate">
+                                Mint Chocolate Lo-fi Box
+                            </p>
+                        </div>
+                        <!-- Mini Progress Bar -->
+                        <div class="w-full h-1 bg-choco-soft rounded-full mt-1.5 overflow-hidden">
+                            <div id="musicProgressBar" class="h-full bg-mint-dark rounded-full w-0 transition-all duration-300"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equalizer Visual -->
+                <div id="eqVisualizer" class="flex items-end gap-0.5 h-3.5 shrink-0 px-1">
+                    <span class="w-0.5 h-1 bg-mint-dark rounded-full"></span>
+                    <span class="w-0.5 h-2 bg-choco-light rounded-full"></span>
+                    <span class="w-0.5 h-1.5 bg-mint-dark rounded-full"></span>
+                </div>
+            </div>
+            <!-- Hidden HTML5 Audio Element for Custom MP3 URLs -->
+            <audio id="customAudioPlayer" preload="none"></audio>
+        </div>
+
+        <!-- Divider -->
+        <div class="border-t border-dashed border-choco-border mx-5"></div>
+
+        <!-- 5. Customer Review Submission Form -->
+        <section class="p-5">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-display text-sm font-medium text-choco flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen-nib text-mint-dark text-xs"></i>
+                    <span>เขียนรีวิวให้ร้านค้า</span>
+                </h2>
+                <span class="text-[10px] text-choco-muted">ให้คะแนนความพึงพอใจ</span>
+            </div>
+
+            <form id="reviewForm" onsubmit="submitReview(event)" class="bg-cream/80 border border-choco-border/80 rounded-2xl p-3.5 space-y-3">
+                <!-- Heart Rating Selector (1-5 Hearts) -->
+                <div class="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-choco-border/50">
+                    <span class="text-xs text-choco-light font-medium">ความประทับใจ</span>
+                    <div class="flex items-center gap-1.5" id="heartRatingSelector" role="radiogroup" aria-label="ให้คะแนนหัวใจ 1 ถึง 5 ดวง">
+                        <button type="button" onclick="setRating(1)" class="heart-btn text-base text-choco focus:outline-none" data-val="1"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setRating(2)" class="heart-btn text-base text-choco focus:outline-none" data-val="2"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setRating(3)" class="heart-btn text-base text-choco focus:outline-none" data-val="3"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setRating(4)" class="heart-btn text-base text-choco focus:outline-none" data-val="4"><i class="fa-solid fa-heart"></i></button>
+                        <button type="button" onclick="setRating(5)" class="heart-btn text-base text-choco focus:outline-none" data-val="5"><i class="fa-solid fa-heart"></i></button>
+                    </div>
+                    <span id="ratingLabel" class="text-[11px] font-medium text-mint-dark min-w-[38px] text-right">5/5</span>
+                </div>
+
+                <!-- Customer Name Input -->
+                <div>
+                    <div class="relative">
+                        <i class="fa-regular fa-user absolute left-3 top-1/2 -translate-y-1/2 text-choco-muted text-xs"></i>
+                        <input type="text" id="customerNameInput" maxlength="40" placeholder="ชื่อของคุณ (เว้นว่างได้ จะแสดงเป็น 'ลูกค้าไม่ระบุชื่อ')" 
+                            class="w-full bg-white text-xs text-choco placeholder-choco-muted/70 pl-8 pr-3 py-2 rounded-xl border border-choco-border/70 focus:outline-none focus:border-mint-dark transition-colors">
+                    </div>
+                </div>
+
+                <!-- Quick Praise Tags Gimmick (Compact Pills) -->
+                <div>
+                    <div class="flex flex-wrap gap-1.5" id="quickTagsContainer">
+                        <button type="button" onclick="appendQuickTag('ส่งไวมาก')" class="btn-compact text-[10px] bg-white hover:bg-mint-soft text-choco-light border border-choco-border/70 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[8px] text-mint-dark"></i> ส่งไวมาก
+                        </button>
+                        <button type="button" onclick="appendQuickTag('งานตรงปกน่ารัก')" class="btn-compact text-[10px] bg-white hover:bg-mint-soft text-choco-light border border-choco-border/70 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[8px] text-mint-dark"></i> งานตรงปกน่ารัก
+                        </button>
+                        <button type="button" onclick="appendQuickTag('แม่ค้าบริการดีมาก')" class="btn-compact text-[10px] bg-white hover:bg-mint-soft text-choco-light border border-choco-border/70 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[8px] text-mint-dark"></i> แม่ค้าบริการดีมาก
+                        </button>
+                        <button type="button" onclick="appendQuickTag('แนะนำร้านนี้เลย')" class="btn-compact text-[10px] bg-white hover:bg-mint-soft text-choco-light border border-choco-border/70 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[8px] text-mint-dark"></i> แนะนำร้านนี้เลย
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Review Comment Textarea -->
+                <div>
+                    <textarea id="reviewTextInput" rows="2" maxlength="250" required placeholder="พิมพ์ข้อความรีวิวหรือความประทับใจที่นี่..."
+                        class="w-full bg-white text-xs text-choco placeholder-choco-muted/70 p-2.5 rounded-xl border border-choco-border/70 focus:outline-none focus:border-mint-dark transition-colors resize-none"></textarea>
+                </div>
+
+                <!-- Compact Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-xs flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane text-[10px] text-mint"></i>
+                        <span>ส่งรีวิว</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Divider -->
+        <div class="border-t border-dashed border-choco-border mx-5"></div>
+
+        <!-- 6. Credit & Reviews Feed -->
+        <section class="p-5 pt-4">
+            <!-- Summary Header & Filter Pills -->
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+                <div class="flex items-center gap-2">
+                    <div class="bg-mint-soft text-choco px-2.5 py-1 rounded-xl border border-mint/60 flex items-center gap-1.5">
+                        <i class="fa-solid fa-heart text-choco text-xs"></i>
+                        <span id="avgScoreDisplay" class="font-display text-sm font-medium">5.0</span>
+                        <span class="text-[10px] text-choco-light">/ 5</span>
+                    </div>
+                    <div>
+                        <h3 class="font-display text-xs font-medium text-choco">เครดิตจากลูกค้า</h3>
+                        <p id="reviewCountText" class="text-[10px] text-choco-muted">ทั้งหมด 0 รายการ</p>
+                    </div>
+                </div>
+
+                <!-- Filter Pills -->
+                <div class="flex items-center gap-1 bg-cream p-1 rounded-full border border-choco-border/60">
+                    <button onclick="setFilter('all')" id="filterAllBtn" class="btn-compact text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-choco text-white">
+                        ทั้งหมด
+                    </button>
+                    <button onclick="setFilter('5')" id="filter5Btn" class="btn-compact text-[10px] font-medium px-2.5 py-0.5 rounded-full text-choco-light hover:text-choco flex items-center gap-1">
+                        <span>5</span> <i class="fa-solid fa-heart text-[8px] text-mint-dark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reviews List Container -->
+            <div id="reviewsList" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-0.5">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </section>
+
+        <!-- Minimal Footer -->
+        <footer class="bg-cream border-t border-choco-border/50 py-3 px-5 text-center">
+            <p class="text-[10px] text-choco-muted flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-leaf text-mint-dark text-[9px]"></i>
+                <span>Verified Credit Page &bull; ChocoMint Minimal System</span>
+            </p>
+        </footer>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- ADMIN PANEL MODAL (Login & Management)     -->
+    <!-- ========================================== -->
+    <div id="adminModal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 bg-choco/40 backdrop-blur-xs">
+        <div class="bg-white w-full max-w-[420px] rounded-3xl shadow-xl border border-choco-border overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+            
+            <!-- Modal Header -->
+            <div class="bg-mint-soft/70 px-5 py-3.5 border-b border-mint/50 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-choco text-mint flex items-center justify-center text-[11px]">
+                        <i class="fa-solid fa-sliders"></i>
+                    </span>
+                    <h2 class="font-display text-sm font-medium text-choco">ระบบหลังบ้าน (Admin)</h2>
+                </div>
+                <button onclick="closeAdminModal()" class="btn-compact w-6 h-6 rounded-full bg-white text-choco-light hover:text-choco flex items-center justify-center text-xs border border-choco-border/60">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Step 1: Login Form -->
+            <div id="adminLoginView" class="p-6 text-center">
+                <div class="w-12 h-12 rounded-2xl bg-choco-soft text-choco flex items-center justify-center mx-auto mb-3 text-lg">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h3 class="font-display text-sm font-medium text-choco">เข้าสู่ระบบเจ้าของร้าน</h3>
+                <p class="text-[11px] text-choco-muted mt-0.5 mb-4">กรอกรหัสผ่านเพื่อแก้ไขข้อมูลร้านและจัดการรีวิว</p>
+                
+                <form onsubmit="handleAdminLogin(event)" class="space-y-3 max-w-[260px] mx-auto">
+                    <input type="password" id="adminPasswordInput" placeholder="รหัสผ่าน (ค่าเริ่มต้น: 1234)" required
+                        class="w-full text-center tracking-widest bg-cream text-xs text-choco px-3 py-2 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark">
+                    <p id="loginErrorMsg" class="text-[10px] text-red-500 hidden">รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่</p>
+                    <button type="submit" class="btn-compact w-full bg-choco hover:bg-choco-light text-white text-xs font-medium py-2 rounded-full shadow-xs">
+                        เข้าสู่ระบบ
+                    </button>
+                </form>
+                <p class="text-[10px] text-choco-muted/80 mt-3">คำใบ้รหัสผ่านทดสอบ: 1234</p>
+            </div>
+
+            <!-- Step 2: Admin Dashboard (Tabs: Store Settings / Manage Reviews) -->
+            <div id="adminDashboardView" class="hidden">
+                <!-- Sub-navigation Pills -->
+                <div class="flex border-b border-choco-border/60 px-4 pt-2.5 gap-2 bg-cream/60">
+                    <button onclick="switchAdminTab('settings')" id="tabSettingsBtn" class="text-xs font-medium pb-2 px-2 border-b-2 border-choco text-choco flex items-center gap-1.5">
+                        <i class="fa-solid fa-store text-[10px]"></i> ตั้งค่าร้านค้า
+                    </button>
+                    <button onclick="switchAdminTab('reviews')" id="tabReviewsBtn" class="text-xs font-medium pb-2 px-2 border-b-2 border-transparent text-choco-muted hover:text-choco flex items-center gap-1.5">
+                        <i class="fa-solid fa-comments text-[10px]"></i> จัดการรีวิว
+                    </button>
+                </div>
+
+                <!-- Tab A: Store & Music Settings -->
+                <form id="adminSettingsForm" onsubmit="saveAdminSettings(event)" class="p-4 space-y-3 max-h-[68vh] overflow-y-auto">
+                    <div>
+                        <label class="block text-[11px] font-medium text-choco mb-1">ชื่อร้านค้า</label>
+                        <input type="text" id="editStoreName" required class="w-full bg-cream text-xs text-choco px-3 py-1.5 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark">
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-medium text-choco mb-1">ข้อความอธิบายร้าน</label>
+                        <textarea id="editStoreBio" rows="2" class="w-full bg-cream text-xs text-choco px-3 py-1.5 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark resize-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div>
+                            <label class="block text-[11px] font-medium text-choco mb-1">URL รูปโปรไฟล์</label>
+                            <input type="url" id="editAvatarUrl" placeholder="https://..." class="w-full bg-cream text-xs text-choco px-3 py-1.5 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-choco mb-1">URL รูปแบนเนอร์</label>
+                            <input type="url" id="editBannerUrl" placeholder="https://..." class="w-full bg-cream text-xs text-choco px-3 py-1.5 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark">
+                        </div>
+                    </div>
+
+                    <div class="pt-1 border-t border-dashed border-choco-border">
+                        <p class="text-[11px] font-medium text-mint-dark mb-2 flex items-center gap-1">
+                            <i class="fa-solid fa-music text-[10px]"></i> ตั้งค่าเพลงพื้นหลัง
+                        </p>
+                        <div class="space-y-2">
+                            <div>
+                                <label class="block text-[10px] text-choco-light mb-0.5">ชื่อเพลงที่แสดง</label>
+                                <input type="text" id="editSongTitle" class="w-full bg-cream text-xs text-choco px-3 py-1.5 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-choco-light mb-0.5">URL ไฟล์เสียง (.mp3) <span class="text-choco-muted">(เว้นว่างเพื่อใช้เสียงกล่องดนตรีในตัว)</span></label>
+                                <input type="url" id="editSongUrl" placeholder="https://example.com/music.mp3" class="w-full bg-cream text-xs text-choco px-3 py-1.5 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-1 border-t border-dashed border-choco-border">
+                        <label class="block text-[10px] text-choco-light mb-0.5">เปลี่ยนรหัสผ่านหลังบ้าน</label>
+                        <input type="text" id="editAdminPass" class="w-full bg-cream text-xs text-choco px-3 py-1.5 rounded-xl border border-choco-border focus:outline-none focus:border-mint-dark">
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <button type="button" onclick="resetToDefaults()" class="btn-compact text-[10px] text-choco-muted hover:text-choco underline">
+                            คืนค่าเริ่มต้น
+                        </button>
+                        <button type="submit" class="btn-compact bg-choco hover:bg-choco-light text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-floppy-disk text-[10px] text-mint"></i>
+                            <span>บันทึกการตั้งค่า</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Tab B: Manage Reviews (Pin / Delete) -->
+                <div id="adminReviewsTab" class="hidden p-4 max-h-[68vh] overflow-y-auto space-y-2">
+                    <p class="text-[11px] text-choco-muted mb-2">ปักหมุดรีวิวแนะนำไว้บนสุด หรือลบรีวิวที่ไม่ต้องการ</p>
+                    <div id="adminReviewsList" class="space-y-2">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimal Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-2">
+        <div class="bg-choco text-white text-xs px-4 py-2 rounded-full shadow-lg flex items-center gap-2 border border-mint/40">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-mint"></i>
+            <span id="toastMessage">บันทึกเรียบร้อยแล้ว</span>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================================
+           1. STATE & DEFAULT DATA (LocalStorage Persistence)
+           ===================================================================== */
+        const STORAGE_KEYS = {
+            SETTINGS: 'chocomint_store_settings_v1',
+            REVIEWS: 'chocomint_store_reviews_v1'
+        };
+
+        const DEFAULT_SETTINGS = {
+            storeName: 'ChocoMint Craft & Studio',
+            storeBio: 'รับออกแบบกราฟิก ป้ายบัญชี ธีมไลน์ และของตกแต่งน่ารัก งานไว ใส่ใจทุกรายละเอียด ขอบคุณทุกความไว้วางใจค่ะ',
+            avatarUrl: '',
+            bannerUrl: '',
+            songTitle: 'Mint Chocolate Lo-fi Box',
+            songUrl: '',
+            adminPassword: '1234'
+        };
+
+        const DEFAULT_REVIEWS = [
+            {
+                id: 'rev-101',
+                name: 'คุณมินตรา (Mintra)',
+                rating: 5,
+                comment: 'งานน่ารักมากกก ตรงปกสุดๆ แม่ค้าใจดีและตอบแชทไวมากค่ะ ไว้มาอุดหนุนอีกแน่นอน',
+                date: '12 พ.ย. 2026',
+                pinned: true
+            },
+            {
+                id: 'rev-102',
+                name: 'K. ChocoLover',
+                rating: 5,
+                comment: 'สั่งป้ายบัญชีไป ได้งานไวกว่าที่คิด โทนสีละมุนตามที่บรีฟเป๊ะ แนะนำร้านนี้เลยครับ',
+                date: '10 พ.ย. 2026',
+                pinned: false
+            },
+            {
+                id: 'rev-103',
+                name: 'น้องใบเตย',
+                rating: 4,
+                comment: 'งานเรียบร้อยดีมากค่ะ แก้ไขให้จนกว่าจะพอใจ บริการน่ารักมาก',
+                date: '08 พ.ย. 2026',
+                pinned: false
+            }
+        ];
+
+        let storeSettings = { ...DEFAULT_SETTINGS };
+        let reviews = [];
+        let selectedRating = 5;
+        let currentFilter = 'all';
+        let isAdminAuthenticated = false;
+
+        /* =====================================================================
+           2. INITIALIZATION & RENDERING
+           ===================================================================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDataFromStorage();
+            renderStoreProfile();
+            renderReviews();
+            setRating(5);
+        });
+
+        function loadDataFromStorage() {
+            try {
+                const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+                if (savedSettings) {
+                    storeSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) };
+                }
+
+                const savedReviews = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+                if (savedReviews) {
+                    reviews = JSON.parse(savedReviews);
+                } else {
+                    reviews = [...DEFAULT_REVIEWS];
+                    saveReviewsToStorage();
+                }
+            } catch (e) {
+                console.error('Error reading storage:', e);
+                reviews = [...DEFAULT_REVIEWS];
+            }
+        }
+
+        function saveSettingsToStorage() {
+            localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(storeSettings));
+        }
+
+        function saveReviewsToStorage() {
+            localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
+        }
+
+        function renderStoreProfile() {
+            document.getElementById('storeNameDisplay').textContent = storeSettings.storeName;
+            document.getElementById('storeBioDisplay').textContent = storeSettings.storeBio;
+            document.getElementById('songTitleDisplay').textContent = storeSettings.songTitle || 'Mint Chocolate Lo-fi Box';
+
+            // Banner Image Handling
+            const bannerImg = document.getElementById('bannerImage');
+            if (storeSettings.bannerUrl && storeSettings.bannerUrl.trim() !== '') {
+                bannerImg.src = storeSettings.bannerUrl.trim();
+                bannerImg.classList.remove('hidden');
+            } else {
+                bannerImg.classList.add('hidden');
+            }
+
+            // Profile Image Handling
+            const profileImg = document.getElementById('profileImage');
+            const avatarFallback = document.getElementById('avatarFallback');
+            if (storeSettings.avatarUrl && storeSettings.avatarUrl.trim() !== '') {
+                profileImg.src = storeSettings.avatarUrl.trim();
+                profileImg.classList.remove('hidden');
+                avatarFallback.classList.add('hidden');
+            } else {
+                handleAvatarError();
+            }
+
+            // Update custom audio source if provided
+            const audioEl = document.getElementById('customAudioPlayer');
+            if (storeSettings.songUrl && storeSettings.songUrl.trim() !== '') {
+                if (audioEl.src !== storeSettings.songUrl.trim()) {
+                    stopMusic();
+                    audioEl.src = storeSettings.songUrl.trim();
+                }
+            } else {
+                audioEl.removeAttribute('src');
+            }
+        }
+
+        function handleAvatarError() {
+            document.getElementById('profileImage').classList.add('hidden');
+            document.getElementById('avatarFallback').classList.remove('hidden');
+        }
+
+        /* =====================================================================
+           3. HEART RATING & CUSTOMER REVIEW SUBMISSION
+           ===================================================================== */
+        function setRating(val) {
+            selectedRating = val;
+            document.getElementById('ratingLabel').textContent = `${val}/5`;
+            const buttons = document.querySelectorAll('#heartRatingSelector .heart-btn');
+            buttons.forEach(btn => {
+                const btnVal = parseInt(btn.getAttribute('data-val'), 10);
+                if (btnVal <= val) {
+                    btn.classList.remove('text-choco-border');
+                    btn.classList.add('text-choco');
+                } else {
+                    btn.classList.remove('text-choco');
+                    btn.classList.add('text-choco-border');
+                }
+            });
+        }
+
+        function appendQuickTag(tagText) {
+            const textarea = document.getElementById('reviewTextInput');
+            const currentVal = textarea.value.trim();
+            if (!currentVal.includes(tagText)) {
+                textarea.value = currentVal ? `${currentVal} ${tagText}` : tagText;
+            }
+            textarea.focus();
+        }
+
+        function submitReview(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('customerNameInput');
+            const textInput = document.getElementById('reviewTextInput');
+
+            const comment = textInput.value.trim();
+            if (!comment) return;
+
+            const customerName = nameInput.value.trim() || 'ลูกค้าไม่ระบุชื่อ';
+            const now = new Date();
+            const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            const formattedDate = `${now.getDate()} ${thaiMonths[now.getMonth()]} ${now.getFullYear()}`;
+
+            const newReview = {
+                id: 'rev-' + Date.now(),
+                name: customerName,
+                rating: selectedRating,
+                comment: comment,
+                date: formattedDate,
+                pinned: false
+            };
+
+            reviews.unshift(newReview);
+            saveReviewsToStorage();
+            renderReviews();
+
+            // Reset Form
+            nameInput.value = '';
+            textInput.value = '';
+            setRating(5);
+            showToast('ขอบคุณสำหรับรีวิวของคุณค่ะ');
+        }
+
+        function setFilter(filterType) {
+            currentFilter = filterType;
+            const allBtn = document.getElementById('filterAllBtn');
+            const fiveBtn = document.getElementById('filter5Btn');
+
+            if (filterType === 'all') {
+                allBtn.className = 'btn-compact text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-choco text-white';
+                fiveBtn.className = 'btn-compact text-[10px] font-medium px-2.5 py-0.5 rounded-full text-choco-light hover:text-choco flex items-center gap-1';
+            } else {
+                fiveBtn.className = 'btn-compact text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-choco text-white flex items-center gap-1';
+                allBtn.className = 'btn-compact text-[10px] font-medium px-2.5 py-0.5 rounded-full text-choco-light hover:text-choco';
+            }
+            renderReviews();
+        }
+
+        function renderReviews() {
+            const listEl = document.getElementById('reviewsList');
+            
+            // Calculate Average & Total
+            const totalCount = reviews.length;
+            const avgScore = totalCount > 0 
+                ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalCount).toFixed(1)
+                : '5.0';
+
+            document.getElementById('avgScoreDisplay').textContent = avgScore;
+            document.getElementById('reviewCountText').textContent = `ทั้งหมด ${totalCount} รายการ`;
+            document.getElementById('totalReviewBadge').innerHTML = `<i class="fa-solid fa-heart text-choco text-[9px]"></i> <span>${totalCount} รีวิว</span>`;
+
+            // Sort: Pinned first, then newest
+            const sortedReviews = [...reviews].sort((a, b) => (b.pinned === true) - (a.pinned === true));
+            const filteredReviews = currentFilter === '5' 
+                ? sortedReviews.filter(r => r.rating === 5) 
+                : sortedReviews;
+
+            if (filteredReviews.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-8 bg-cream/60 rounded-2xl border border-dashed border-choco-border">
+                        <i class="fa-regular fa-heart text-xl text-choco-muted mb-1.5"></i>
+                        <p class="text-xs text-choco-muted">ยังไม่มีรีวิวในหมวดหมู่นี้</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = filteredReviews.map(rev => {
+                // Generate 5 hearts HTML
+                let heartsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= rev.rating) {
+                        heartsHtml += `<i class="fa-solid fa-heart text-choco text-[10px]"></i>`;
+                    } else {
+                        heartsHtml += `<i class="fa-solid fa-heart text-choco-border text-[10px]"></i>`;
+                    }
+                }
+
+                const pinBadge = rev.pinned 
+                    ? `<span class="inline-flex items-center gap-1 text-[9px] font-medium bg-mint-soft text-choco px-2 py-0.2 rounded-full border border-mint"><i class="fa-solid fa-thumbtack text-[8px] text-mint-dark"></i> แนะนำ</span>` 
+                    : '';
+
+                return `
+                    <article class="bg-cream/90 hover:bg-white transition-colors border ${rev.pinned ? 'border-mint-dark/60' : 'border-choco-border/70'} rounded-2xl p-3.5 shadow-2xs">
+                        <div class="flex items-start justify-between gap-2 mb-1.5">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <div class="w-7 h-7 rounded-full bg-mint-soft text-choco flex items-center justify-center text-[11px] font-medium shrink-0 border border-mint/60">
+                                    <i class="fa-solid fa-user text-[10px] text-choco-light"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1.5">
+                                        <h4 class="text-xs font-medium text-choco truncate">${escapeHtml(rev.name)}</h4>
+                                        ${pinBadge}
+                                    </div>
+                                    <span class="text-[10px] text-choco-muted block">${escapeHtml(rev.date)}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-0.5 shrink-0 bg-white px-2 py-1 rounded-full border border-choco-border/50">
+                                ${heartsHtml}
+                            </div>
+                        </div>
+                        <p class="text-xs text-choco-light leading-relaxed pl-9 break-words">
+                            ${escapeHtml(rev.comment)}
+                        </p>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        /* =====================================================================
+           4. MINIMAL MUSIC PLAYER (Custom MP3 + Built-in Web Audio Music Box)
+           ===================================================================== */
+        let isPlaying = false;
+        let audioCtx = null;
+        let synthInterval = null;
+        let progressInterval = null;
+        let synthStep = 0;
+
+        // Gentle Choco-Mint Music Box Melody (Pentatonic / Major 7th notes in Hz)
+        const melodyNotes = [
+            523.25, 659.25, 783.99, 987.77, // C5, E5, G5, B5
+            880.00, 783.99, 659.25, 587.33, // A5, G5, E5, D5
+            523.25, 659.25, 783.99, 659.25, // C5, E5, G5, E5
+            587.33, 493.88, 523.25, 0       // D5, B4, C5, Rest
+        ];
+
+        function toggleMusic() {
+            if (isPlaying) {
+                stopMusic();
+            } else {
+                startMusic();
+            }
+        }
+
+        function startMusic() {
+            const customUrl = storeSettings.songUrl && storeSettings.songUrl.trim();
+            const audioEl = document.getElementById('customAudioPlayer');
+
+            if (customUrl) {
+                audioEl.play().then(() => {
+                    setPlayerUIState(true);
+                    progressInterval = setInterval(() => {
+                        if (audioEl.duration) {
+                            const pct = (audioEl.currentTime / audioEl.duration) * 100;
+                            document.getElementById('musicProgressBar').style.width = `${pct}%`;
+                        }
+                    }, 300);
+                }).catch(() => {
+                    // Fallback to built-in synthesizer if external MP3 fails
+                    startBuiltInMusicBox();
+                });
+            } else {
+                startBuiltInMusicBox();
+            }
+        }
+
+        function startBuiltInMusicBox() {
+            try {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                setPlayerUIState(true);
+                playMusicBoxNote();
+
+                synthInterval = setInterval(() => {
+                    playMusicBoxNote();
+                }, 650);
+            } catch (err) {
+                showToast('เบราว์เซอร์ไม่รองรับเสียงอัตโนมัติ');
+            }
+        }
+
+        function playMusicBoxNote() {
+            if (!audioCtx || !isPlaying) return;
+            const freq = melodyNotes[synthStep % melodyNotes.length];
+            const progressPct = ((synthStep % melodyNotes.length) + 1) / melodyNotes.length * 100;
+            document.getElementById('musicProgressBar').style.width = `${progressPct}%`;
+            synthStep++;
+
+            if (freq === 0) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            // Soft music box envelope
+            gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.045, audioCtx.currentTime + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.62);
+        }
+
+        function stopMusic() {
+            const audioEl = document.getElementById('customAudioPlayer');
+            audioEl.pause();
+
+            if (synthInterval) {
+                clearInterval(synthInterval);
+                synthInterval = null;
+            }
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+            setPlayerUIState(false);
+        }
+
+        function setPlayerUIState(playing) {
+            isPlaying = playing;
+            const icon = document.getElementById('musicPlayIcon');
+            const eq = document.getElementById('eqVisualizer');
+            if (playing) {
+                icon.className = 'fa-solid fa-pause';
+                eq.classList.add('eq-playing');
+            } else {
+                icon.className = 'fa-solid fa-play ml-0.5';
+                eq.classList.remove('eq-playing');
+            }
+        }
+
+        /* =====================================================================
+           5. ADMIN PANEL LOGIC
+           ===================================================================== */
+        function openAdminModal() {
+            const modal = document.getElementById('adminModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            if (isAdminAuthenticated) {
+                showAdminDashboard();
+            } else {
+                document.getElementById('adminLoginView').classList.remove('hidden');
+                document.getElementById('adminDashboardView').classList.add('hidden');
+                document.getElementById('adminPasswordInput').value = '';
+                document.getElementById('loginErrorMsg').classList.add('hidden');
+            }
+        }
+
+        function closeAdminModal() {
+            const modal = document.getElementById('adminModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const inputPass = document.getElementById('adminPasswordInput').value;
+            if (inputPass === storeSettings.adminPassword) {
+                isAdminAuthenticated = true;
+                showAdminDashboard();
+            } else {
+                document.getElementById('loginErrorMsg').classList.remove('hidden');
+            }
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('adminLoginView').classList.add('hidden');
+            document.getElementById('adminDashboardView').classList.remove('hidden');
+
+            // Populate form fields
+            document.getElementById('editStoreName').value = storeSettings.storeName;
+            document.getElementById('editStoreBio').value = storeSettings.storeBio;
+            document.getElementById('editAvatarUrl').value = storeSettings.avatarUrl;
+            document.getElementById('editBannerUrl').value = storeSettings.bannerUrl;
+            document.getElementById('editSongTitle').value = storeSettings.songTitle;
+            document.getElementById('editSongUrl').value = storeSettings.songUrl;
+            document.getElementById('editAdminPass').value = storeSettings.adminPassword;
+
+            renderAdminReviewsList();
+        }
+
+        function switchAdminTab(tabName) {
+            const settingsForm = document.getElementById('adminSettingsForm');
+            const reviewsTab = document.getElementById('adminReviewsTab');
+            const tabSettingsBtn = document.getElementById('tabSettingsBtn');
+            const tabReviewsBtn = document.getElementById('tabReviewsBtn');
+
+            if (tabName === 'settings') {
+                settingsForm.classList.remove('hidden');
+                reviewsTab.classList.add('hidden');
+                tabSettingsBtn.className = 'text-xs font-medium pb-2 px-2 border-b-2 border-choco text-choco flex items-center gap-1.5';
+                tabReviewsBtn.className = 'text-xs font-medium pb-2 px-2 border-b-2 border-transparent text-choco-muted hover:text-choco flex items-center gap-1.5';
+            } else {
+                settingsForm.classList.add('hidden');
+                reviewsTab.classList.remove('hidden');
+                tabReviewsBtn.className = 'text-xs font-medium pb-2 px-2 border-b-2 border-choco text-choco flex items-center gap-1.5';
+                tabSettingsBtn.className = 'text-xs font-medium pb-2 px-2 border-b-2 border-transparent text-choco-muted hover:text-choco flex items-center gap-1.5';
+                renderAdminReviewsList();
+            }
+        }
+
+        function saveAdminSettings(e) {
+            e.preventDefault();
+            storeSettings.storeName = document.getElementById('editStoreName').value.trim() || DEFAULT_SETTINGS.storeName;
+            storeSettings.storeBio = document.getElementById('editStoreBio').value.trim();
+            storeSettings.avatarUrl = document.getElementById('editAvatarUrl').value.trim();
+            storeSettings.bannerUrl = document.getElementById('editBannerUrl').value.trim();
+            storeSettings.songTitle = document.getElementById('editSongTitle').value.trim() || 'Mint Chocolate Lo-fi Box';
+            storeSettings.songUrl = document.getElementById('editSongUrl').value.trim();
+            
+            const newPass = document.getElementById('editAdminPass').value.trim();
+            if (newPass) storeSettings.adminPassword = newPass;
+
+            saveSettingsToStorage();
+            renderStoreProfile();
+            closeAdminModal();
+            showToast('อัปเดตข้อมูลหน้าร้านเรียบร้อยแล้ว');
+        }
+
+        function resetToDefaults() {
+            storeSettings = { ...DEFAULT_SETTINGS };
+            saveSettingsToStorage();
+            renderStoreProfile();
+            showAdminDashboard();
+            showToast('คืนค่าเริ่มต้นเรียบร้อยแล้ว');
+        }
+
+        function renderAdminReviewsList() {
+            const container = document.getElementById('adminReviewsList');
+            if (reviews.length === 0) {
+                container.innerHTML = `<p class="text-xs text-choco-muted text-center py-4">ยังไม่มีรายการรีวิว</p>`;
+                return;
+            }
+
+            container.innerHTML = reviews.map(rev => `
+                <div class="bg-cream border border-choco-border/80 rounded-xl p-2.5 flex items-start justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-medium text-choco truncate">${escapeHtml(rev.name)}</span>
+                            <span class="text-[10px] text-mint-dark font-medium">(${rev.rating}/5)</span>
+                        </div>
+                        <p class="text-[11px] text-choco-light line-clamp-2 mt-0.5">${escapeHtml(rev.comment)}</p>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="togglePinReview('${rev.id}')" title="${rev.pinned ? 'เลิกปักหมุด' : 'ปักหมุดแนะนำ'}"
+                            class="btn-compact w-6 h-6 rounded-full border flex items-center justify-center text-[10px] ${rev.pinned ? 'bg-mint text-choco border-mint-dark' : 'bg-white text-choco-muted border-choco-border'}">
+                            <i class="fa-solid fa-thumbtack"></i>
+                        </button>
+                        <button type="button" onclick="deleteReview('${rev.id}')" title="ลบรีวิว"
+                            class="btn-compact w-6 h-6 rounded-full bg-white hover:bg-red-50 text-red-500 border border-choco-border flex items-center justify-center text-[10px]">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function togglePinReview(id) {
+            const target = reviews.find(r => r.id === id);
+            if (target) {
+                target.pinned = !target.pinned;
+                saveReviewsToStorage();
+                renderReviews();
+                renderAdminReviewsList();
+                showToast(target.pinned ? 'ปักหมุดรีวิวแนะนำแล้ว' : 'ยกเลิกการปักหมุดแล้ว');
+            }
+        }
+
+        function deleteReview(id) {
+            reviews = reviews.filter(r => r.id !== id);
+            saveReviewsToStorage();
+            renderReviews();
+            renderAdminReviewsList();
+            showToast('ลบรีวิวเรียบร้อยแล้ว');
+        }
+
+        /* =====================================================================
+           6. UTILITIES (Copy Link, Toast, XSS Escape)
+           ===================================================================== */
+        function copyStoreLink() {
+            const tempInput = document.createElement('input');
+            tempInput.value = window.location.href;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast('คัดลอกลิงก์หน้าร้านเรียบร้อยแล้ว');
+        }
+
+        let toastTimer = null;
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').textContent = msg;
+            toast.classList.remove('opacity-0', 'translate-y-2');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 2500);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
